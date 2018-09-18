@@ -1,0 +1,33 @@
+<?php 
+	// 1. Өгөгдлийн сангийн зохиомжийг гүйцэтгэх (2 оноо)
+	$conn = new mysqli('localhost', 'root', '', 'tender') or die("Connection failed: " . mysqli_connect_error());
+	if(isset($_GET['id'])){
+		// 4. Тухайн хэрэглэгч тухайн тендерийг орж үзсэн тохиолдолд күүкид "үзсэн" гэх мэдээллийг бичих (3 оноо)
+		setcookie($_GET['id'],'үзсэн',time() + (86400 * 30), "/");
+		// 6. Тухайн тендерийг хэрэглэгчийн үзсэн тоог сесшнд хадгалж харуулах (5 оноо)
+		session_start();
+		if(isset($_SESSION['views']))
+			$_SESSION['views'] += 1;
+		else
+			$_SESSION['views'] = 1;
+		echo "Views: ".$_SESSION['views'];
+		// 3. Нэг тендерийн мэдээлэл дээр дарахад санал өгсөн компаниудын мэдээллийг жагсааж харуулах (3 оноо)
+		$qry = "select * from bid where id=".$_GET['id'];
+		$result = $conn->query($qry);
+		while($r= $result->fetch_assoc()){
+			printf("<p>%s\t%s\t%s</p>",$r['id'],$r['company'],$r['bidAmount']);
+		}
+	}
+	else {
+		// 2. Тендерийн мэдээллийг жагсааж харуулах вэб хуудас хөгжүүлэх (2 оноо)
+		$qry = "select * from tender";
+		$result = $conn->query($qry);
+		while($r= $result->fetch_assoc()){
+			printf("<p>%s\t<a href='tender.php?id=%s'>%s</a>\t%s</p>",$r['id'],$r['id'],$r['name'],$r['description']);
+			// 5. Тухайн хэрэглэгчийн өмнө нь орж үзсэн тендерийн мэдээллийн ард "танилцсан" гэх мэдээллийг харуулах (5 оноо)
+			if(isset($_COOKIE[$r['id']])){
+				echo "[Танилцсан]";
+			}
+		}
+	}
+?>
